@@ -29,5 +29,5 @@ class MessageController {
      * Returns a greeting for the given name.
      */
     @GetMapping("/")
-    fun index(@RequestParam("name") name: String): String = "Hello, $name!"
+    fun index(@RequestParam("name") name: String): String = "Hello, $name!. This is a health test."
 }

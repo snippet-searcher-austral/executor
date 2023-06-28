@@ -26,28 +26,27 @@ jobs:
           push: true
           tags: |
             ghcr.io/snippet-searcher-austral/executor-dev:latest
-            
-#  deploy:
-#    needs: publish-dev-image
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - name: Create SSH key
-#        run: |
-#          mkdir -p ~/.ssh/
-#          echo "$SSH_PRIVATE_KEY" > ../private.key
-#          sudo chmod 400 ../private.key
-#          echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-#        shell: bash
-#        env:
-#          SSH_PRIVATE_KEY: ${{secrets.DEV_SSH_PRIVATE}}
-#          SSH_KNOWN_HOSTS: ${{secrets.DEV_SSH_KNOWN_HOSTS}}
-#
-#      - name: Connect via SSH and deploy
-#        run: |
-#          ssh -i $SSH_KEY_PATH matito@${{secrets.DEV_SSH_HOST}} 'sudo ~/deploy-service.sh authorizer-api'
-#        env:
-#          SSH_KEY_PATH: ${{ github.workspace }}/../private.key
 
+  deploy:
+    needs: publish-dev-image
+    runs-on: ubuntu-latest
 
-            
+    steps:
+      - name: Create SSH key
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_PRIVATE_KEY" > ../private.key
+          sudo chmod 400 ../private.key
+          echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{secrets.DEV_SSH_PRIVATE}}
+          SSH_KNOWN_HOSTS: ${{secrets.DEV_SSH_KNOWN_HOSTS}}
+
+      - name: Connect via SSH and deploy
+        run: |
+          ssh -i $SSH_KEY_PATH matito@${{secrets.DEV_SSH_HOST}} "sudo bash -s" <<EOF
+            bash deploy-script.sh "${{ secrets.GHCR_TOKEN }}" "executor-api"
+          EOF
+        env:
+          SSH_KEY_PATH: ${{ github.workspace }}/../private.key
