@@ -12,13 +12,25 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 
 repositories {
+    mavenLocal()
     mavenCentral()
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/matiaslcoulougian/printscript-language")
+        credentials {
+            username = ""
+            password = ""
+        }
+    }
 }
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
+    implementation 'printscript-language:app:0.1.1-SNAPSHOT'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.json:json:20211205'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
