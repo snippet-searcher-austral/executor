@@ -16,6 +16,12 @@ jobs:
           registry: ghcr.io
           username: snippet-searcher-austral
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Print USERNAME
+        run: echo $USERNAME
+        env:
+          USERNAME: ${{ secrets.GHCR_USER }}
+      - name: Set environment variables
+        run: export USERNAME=${{ secrets.GHCR_USER }} && export TOKEN=${{ secrets.GHCR_TOKEN }}
       - name: Push to GitHub Packages
         id: docker_build
         uses: docker/build-push-action@v4
