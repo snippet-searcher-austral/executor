@@ -18,6 +18,9 @@ jobs:
           username: snippet-searcher-austral
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Run Gradle
         run: ./gradlew build -Pgpr.user=${{ secrets.GHCR_USER }} -Pgpr.key=${{ secrets.GHCR_TOKEN }}
 
