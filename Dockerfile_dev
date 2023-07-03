@@ -4,6 +4,10 @@ WORKDIR /home/gradle/src
 RUN gradle assemble
 
 FROM amazoncorretto:17-alpine3.14
+ARG github_username
+ARG github_token
+ENV GITHUB_USERNAME $github_username
+ENV GITHUB_TOKEN $github_token
 EXPOSE 8080
 RUN mkdir /app
 COPY --from=build /home/gradle/src/build/libs/*.jar /app/

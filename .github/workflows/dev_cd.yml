@@ -30,9 +30,10 @@ jobs:
           push: true
           tags: |
             ghcr.io/snippet-searcher-austral/executor-dev:latest
-        env:
-          USERNAME: ${{ secrets.GHCR_USER }}
-          TOKEN: ${{ secrets.GHCR_TOKEN }}
+          context: .
+          name: ${{ github.repository }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
     needs: publish-dev-image
