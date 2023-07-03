@@ -16,12 +16,6 @@ jobs:
           registry: ghcr.io
           username: snippet-searcher-austral
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Print USERNAME
-        run: echo $USERNAME
-        env:
-          USERNAME: ${{ secrets.GHCR_USER }}
-      - name: Set environment variables
-        run: export USERNAME=${{ secrets.GHCR_USER }} && export TOKEN=${{ secrets.GHCR_TOKEN }}
       - name: Push to GitHub Packages
         id: docker_build
         uses: docker/build-push-action@v4
@@ -30,10 +24,9 @@ jobs:
           push: true
           tags: |
             ghcr.io/snippet-searcher-austral/executor-dev:latest
-          context: .
-          name: ${{ github.repository }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          build-args: |
+            github_username=${{ secrets.GHCR_USER }}
+            github_token=${{ secrets.GHCR_TOKEN }}
 
   deploy:
     needs: publish-dev-image
