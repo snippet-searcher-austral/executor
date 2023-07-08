@@ -2,10 +2,13 @@ package com.executor
 
 import com.executor.interpreter.WebSocketContextProvider
 import org.json.JSONObject
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
+import org.springframework.stereotype.Component
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
@@ -34,17 +37,19 @@ fun main(args: Array<String>) {
 
 @Configuration
 @EnableWebSocket
-class WSConfig : WebSocketConfigurer {
+class WSConfig(@Autowired val executorHandler: ExecutorHandler) : WebSocketConfigurer {
     override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
-        registry.addHandler(ExecutorHandler(), "/execute")
+        registry.addHandler(executorHandler, "/execute")
     }
 }
 
-
+@Component
 class ExecutorHandler: TextWebSocketHandler() {
     private var contextProvider: WebSocketContextProvider = WebSocketContextProvider()
     private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
+    @Value("\${snippet-manager.url}")
+    private lateinit var snippetManagerUrl: String
 
     private fun execute(code: String) {
         val astIterator = getAstIterator(code, "1.1")
@@ -55,7 +60,6 @@ class ExecutorHandler: TextWebSocketHandler() {
             }
         }
         catch (e: Exception) {
-            println(e.message)
             contextProvider.emit(e.message.toString())
         }
 
@@ -70,7 +74,6 @@ class ExecutorHandler: TextWebSocketHandler() {
     }
 
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
-        println(message.payload)
         contextProvider.handleWebSocketMessage(message)
     }
 
@@ -78,25 +81,29 @@ class ExecutorHandler: TextWebSocketHandler() {
     override fun afterConnectionEstablished(session: WebSocketSession) {
         contextProvider = WebSocketContextProvider(MapMemory(mutableMapOf()),session)
         val snippetId = session.uri?.query?.split("=")?.get(1)
-        println(snippetId)
-        if (snippetId == null) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Snippet Id Not Provided")
+            ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Snippet Id Not Provided")
+        val headers = session.handshakeHeaders
+        val accessToken = headers.getFirst("Authorization")?.substring(7)
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "No Authorization Provided")
         val code: String;
         try {
-            code = getSnippet(snippetId)
+            code = getSnippet(snippetId, accessToken)
         }
         catch (e: Exception) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "Snippet provided not found")
         }
-        println(code)
         executorService.execute {
             execute(code)
+            // disconnect after execution
+            session.close()
         }
     }
 
     // TODO: Authenticate request to snippet manager and check if user has permission in manager.
-    private fun getSnippet(snippetId: String): String {
-        val url = URL("https://snippet-searcher.southafricanorth.cloudapp.azure.com/snippet-manager/snippet/$snippetId")
+    private fun getSnippet(snippetId: String, accessToken: String): String {
+        val url = URL(snippetManagerUrl + snippetId)
         val connection = url.openConnection() as HttpURLConnection
+        connection.setRequestProperty("Authorization", "Bearer $accessToken")
         connection.requestMethod = "GET"
         val response = connection.inputStream.bufferedReader().use { it.readText() }
         connection.disconnect()

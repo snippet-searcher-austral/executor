@@ -1,0 +1,16 @@
+auth0:
+  audience: snippet-authorizer
+
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://snippet-authorizer.us.auth0.com/
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
