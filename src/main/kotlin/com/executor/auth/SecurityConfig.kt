@@ -28,6 +28,7 @@ class SecurityConfig(
         .authorizeExchange {
             it
                 .pathMatchers("/execute/*").authenticated()
+                .pathMatchers("/execute-test/*").authenticated()
                 .anyExchange().denyAll()
         }
         .oauth2ResourceServer { it.jwt(withDefaults()) }
