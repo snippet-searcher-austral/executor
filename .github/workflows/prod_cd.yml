@@ -31,7 +31,7 @@ jobs:
             github_token=${{ secrets.GHCR_TOKEN }}
 
   deploy:
-    needs: publish-dev-image
+    needs: publish-prod-image
     runs-on: ubuntu-latest
 
     steps:
