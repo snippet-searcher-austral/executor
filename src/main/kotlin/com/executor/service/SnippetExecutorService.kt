@@ -22,8 +22,7 @@ import java.util.*
 @Service
 class SnippetExecutorService {
 
-    @Value("\${snippet-manager.url}")
-    private lateinit var snippetManagerUrl: String
+    private var snippetManagerUrl = System.getenv("SNIPPET_MANAGER_URL") ?: "Not found :'("
 
     fun executeTest(id: UUID, accessToken: String): TestCaseResultDTO {
         val testCase = getTestCase(id.toString(), accessToken)

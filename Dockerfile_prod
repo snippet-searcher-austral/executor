@@ -1,6 +1,10 @@
 FROM gradle:8.1.1-jdk17 AS build
 COPY  . /home/gradle/src
 WORKDIR /home/gradle/src
+ARG github_username
+ARG github_token
+ENV GITHUB_USERNAME $github_username
+ENV GITHUB_TOKEN $github_token
 RUN gradle assemble
 
 FROM amazoncorretto:17-alpine3.14
